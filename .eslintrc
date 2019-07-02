@@ -1,0 +1,6 @@
+{
+    "extends": "rallycoding",
+    "rules": {
+        "import/no-unresolved": "off"
+    }
+}
