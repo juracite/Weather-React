@@ -1,1 +1,2 @@
-export const API_KEY = "e15a1708fbc687e045c9c68da30fb752";
+export const API_KEY = '';
+export const FACEBOOK_APP_ID = '';

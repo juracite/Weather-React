@@ -1,14 +1,14 @@
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { MapView } from "expo";
-import { SearchBar } from "react-native-elements";
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import { MapView } from 'expo';
+import { SearchBar } from 'react-native-elements';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp
-} from "react-native-responsive-screen";
-import { connect } from "react-redux";
-import { getCurrentWeatherByCity } from "../actions";
-import WeatherCard from "../components/weather-card";
+} from 'react-native-responsive-screen';
+import { connect } from 'react-redux';
+import { getCurrentWeatherByCity } from '../actions';
+import WeatherCard from '../components/weather-card';
 
 const DEFAULT_COORD = {
   lat: 48.859268,
@@ -16,7 +16,7 @@ const DEFAULT_COORD = {
 };
 
 class SearchScreen extends React.Component {
-  state = { search: "" };
+  state = { search: '' };
   updateSearch = search => {
     this.setState({ search });
   };
@@ -42,7 +42,7 @@ class SearchScreen extends React.Component {
             longitudeDelta: 0.1
           }}
           scrollEnabled={false}
-          liteMode={true}
+          liteMode
         />
         {this.props.currentWeather && (
           <WeatherCard currentWeather={this.props.currentWeather} />
@@ -54,10 +54,10 @@ class SearchScreen extends React.Component {
           onSubmitEditing={this.submitSearch}
           placeholder="Type your city..."
           containerStyle={{
-            position: "absolute",
-            bottom: hp("50%"),
-            left: wp("5%"),
-            width: wp("90%")
+            position: 'absolute',
+            bottom: hp('50%'),
+            left: wp('5%'),
+            width: wp('90%')
           }}
         />
       </View>
@@ -71,11 +71,9 @@ const styles = StyleSheet.create({
   }
 });
 
-const mapStateToProps = store => {
-  return {
+const mapStateToProps = store => ({
     currentWeather: store.weather.currentWeather
-  };
-};
+  });
 
 const mapDispatchToProps = {
   getCurrentWeatherByCity

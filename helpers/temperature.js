@@ -1,3 +1,1 @@
-export const kelvinToCelcius = k => {
-  return Math.round(k - 273.15);
-};
+export const kelvinToCelcius = k => Math.round(k - 273.15);

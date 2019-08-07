@@ -1,33 +1,40 @@
-import React, { Component } from "react";
-import { Animated, View, Text, PanResponder, Image } from "react-native";
+import React, { Component } from 'react';
+import { Button } from 'react-native-elements';
+import { withNavigation } from 'react-navigation';
+import { Animated, View, Text, PanResponder, Image } from 'react-native';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp
-} from "react-native-responsive-screen";
-import { kelvinToCelcius } from "../helpers/temperature";
-import { Button } from "react-native-elements";
+} from 'react-native-responsive-screen';
+import { kelvinToCelcius } from '../helpers/temperature';
 
-const CARD_INITIAL_POSITION_Y = hp("80%");
-const CARD_INITIAL_POSITION_X = wp("5%");
+const CARD_INITIAL_POSITION_Y = hp('80%');
+const CARD_INITIAL_POSITION_X = wp('5%');
 
-const TRESHOLD_TO_TOP = hp("75%");
-const TRESHOLD_TO_BOTTOM = hp("70%");
-const MAX_DRAG_ZONE_WHEN_OPEN = hp("65%");
+const TRESHOLD_TO_TOP = hp('75%');
+const TRESHOLD_TO_BOTTOM = hp('70%');
+const MAX_DRAG_ZONE_WHEN_OPEN = hp('65%');
 
-const CARD_OPEN_POSITION = hp("60%");
+const CARD_OPEN_POSITION = hp('60%');
 
-const ICON_URL = "http://openweathermap.org/img/w/";
+const ICON_URL = 'http://openweathermap.org/img/w/';
 
 class WeatherCard extends Component {
   state = { panResponder: undefined, isOpen: false };
 
   componentDidMount() {
+    this.onFocusListener = this.props.navigation.addListener(
+      'willFocus',
+      payload => {
+        this.resetPosition(() => this.setState({ isOpen: false }));
+      }
+    );
     this.position = new Animated.ValueXY();
     this.position.setValue({
       x: CARD_INITIAL_POSITION_X,
       y: CARD_INITIAL_POSITION_Y
     });
-    panResponder = PanResponder.create({
+    const panResponder = PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onPanResponderMove: (e, gesture) => {
         if (!(this.state.isOpen && gesture.y0 > MAX_DRAG_ZONE_WHEN_OPEN)) {
@@ -39,25 +46,19 @@ class WeatherCard extends Component {
       },
       onPanResponderRelease: (e, gesture) => {
         if (!this.state.isOpen) {
-          console.log("isOpen : True");
+          console.log('isOpen : True');
           if (gesture.moveY <= TRESHOLD_TO_TOP) {
             this.setOpenPosition(() => this.setState({ isOpen: true }));
           } else {
             this.resetPosition();
           }
-        } else {
-          if (gesture.moveY <= TRESHOLD_TO_BOTTOM) {
-            this.setOpenPosition();
-          } else {
-            if (gesture.y0 < MAX_DRAG_ZONE_WHEN_OPEN) {
-              this.resetPosition(() => this.setState({ isOpen: false }));
-            }
-          }
+        } else if (gesture.moveY <= TRESHOLD_TO_BOTTOM) {
+          this.setOpenPosition();
+        } else if (gesture.y0 < MAX_DRAG_ZONE_WHEN_OPEN) {
+          this.resetPosition(() => this.setState({ isOpen: false }));
         }
       },
-      onPanResponderEnd: (e, gesture) => {
-        return true;
-      }
+      onPanResponderEnd: (e, gesture) => true
     });
     this.setState({ panResponder });
   }
@@ -70,6 +71,19 @@ class WeatherCard extends Component {
     }).start(() => done && done());
   };
 
+  getCardStyle() {
+    return {
+      width: wp('90%'),
+      height: hp('110%'),
+      borderRadius: 10,
+      zIndex: 2,
+      backgroundColor: 'white',
+      elevation: 1,
+      position: 'absolute',
+      padding: hp('2%'),
+      transform: this.position.getTranslateTransform()
+    };
+  }
   resetPosition = done => {
     Animated.spring(this.position, {
       toValue: { x: CARD_INITIAL_POSITION_X, y: CARD_INITIAL_POSITION_Y },
@@ -78,29 +92,20 @@ class WeatherCard extends Component {
     }).start(() => done && done());
   };
 
-  getCardStyle() {
-    return {
-      width: wp("90%"),
-      height: hp("110%"),
-      borderRadius: 10,
-      zIndex: 2,
-      backgroundColor: "white",
-      elevation: 1,
-      position: "absolute",
-      padding: hp("2%"),
-      transform: this.position.getTranslateTransform()
-    };
-  }
-
+  goToDetail = () => {
+    this.props.navigation.push('Detail', {
+      city: this.props.currentWeather.name
+    });
+  };
   renderHeader() {
     return (
-      <View style={{ justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ fontSize: 30, marginTop: hp("1%") }}>
+      <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ fontSize: 30, marginTop: hp('1%') }}>
           {this.props.currentWeather.name}
         </Text>
-        <View style={{ flexDirection: "row" }}>
-          <Text style={{ marginTop: hp("1%"), fontSize: 35 }}>
-            {kelvinToCelcius(this.props.currentWeather.main.temp) + " C°"}
+        <View style={{ flexDirection: 'row' }}>
+          <Text style={{ marginTop: hp('1%'), fontSize: 35 }}>
+            {`${kelvinToCelcius(this.props.currentWeather.main.temp)} C°`}
           </Text>
           <Image
             style={{ height: 60, width: 60 }}
@@ -117,22 +122,22 @@ class WeatherCard extends Component {
   renderMoreDetails() {
     return (
       <View>
-        <View style={{ alignItems: "center" }}>
+        <View style={{ alignItems: 'center' }}>
           <Text>Humidity : {this.props.currentWeather.main.humidity} %</Text>
           <Text>Pressure : {this.props.currentWeather.main.pressure} hpa</Text>
           <Text>
-            Max temperature :{" "}
+            Max temperature :{' '}
             {kelvinToCelcius(this.props.currentWeather.main.temp_max)} C°
           </Text>
           <Text>
-            Min temperature :{" "}
+            Min temperature :{' '}
             {kelvinToCelcius(this.props.currentWeather.main.temp_min)} C°
           </Text>
           <Text>Wind speed : {this.props.currentWeather.wind.speed} Km/h</Text>
         </View>
         <Button
-          containerStyle={{ marginTop: hp("3%"), width: wp("80%") }}
-          onPress={() => console.log("Todo")}
+          containerStyle={{ marginTop: hp('3%'), width: wp('80%') }}
+          onPress={this.goToDetail}
           title="See 5 days forecast"
         />
       </View>
@@ -153,4 +158,4 @@ class WeatherCard extends Component {
   }
 }
 
-export default WeatherCard;
+export default withNavigation(WeatherCard);
